@@ -1,0 +1,14 @@
+{
+  "name": "sebastian",
+  "version": "0.2.7",
+  "description": "Interactive Mermaid diagram preview and annotation for Claude Code",
+  "author": "micnoy <micnoy@users.noreply.github.com> (https://github.com/micnoy)",
+  "homepage": "https://github.com/micnoy/sebastian",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micnoy/sebastian.git"
+  },
+  "bin": {
+    "sebastian": "./bin/sebastian"
+  }
+}

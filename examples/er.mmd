@@ -1,0 +1,20 @@
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    PRODUCT ||--o{ ORDER_ITEM : "ordered in"
+    PRODUCT }|--|| CATEGORY : "belongs to"
+    CUSTOMER {
+        int id PK
+        string name
+        string email
+    }
+    ORDER {
+        int id PK
+        date placed_at
+        string status
+    }
+    PRODUCT {
+        int id PK
+        string name
+        float price
+    }

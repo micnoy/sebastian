@@ -1,0 +1,18 @@
+gitGraph
+    commit id: "init"
+    branch develop
+    checkout develop
+    commit id: "setup"
+    branch feature/auth
+    checkout feature/auth
+    commit id: "login"
+    commit id: "jwt"
+    checkout develop
+    merge feature/auth
+    branch feature/ui
+    checkout feature/ui
+    commit id: "components"
+    checkout develop
+    merge feature/ui
+    checkout main
+    merge develop tag: "v1.0.0"

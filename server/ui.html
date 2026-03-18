@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sebastian</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root, [data-theme="dark"] {
+      --bg:               #0d1117;
+      --surface:          #161b22;
+      --surface2:         #21262d;
+      --border:           #30363d;
+      --text:             #e6edf3;
+      --text-muted:       #8b949e;
+      --text-dim:         #484f58;
+      --accent:           #58a6ff;
+      --green:            #3fb950;
+      --green-bg:         #238636;
+      --red:              #f85149;
+      --orange:           #f78166;
+      --blue-btn:         #1f6feb;
+      --blue-btn-hover:   #388bfd;
+      --error-bg:         #1a0a0a;
+      --approve-hover-bg: #0d2b18;
+      --overlay-bg:       rgba(13,17,23,0.92);
+    }
+
+    [data-theme="light"] {
+      --bg:               #ffffff;
+      --surface:          #f6f8fa;
+      --surface2:         #eaeef2;
+      --border:           #d0d7de;
+      --text:             #1f2328;
+      --text-muted:       #636c76;
+      --text-dim:         #9198a1;
+      --accent:           #0969da;
+      --green:            #1a7f37;
+      --green-bg:         #1f883d;
+      --red:              #cf222e;
+      --orange:           #bc4c00;
+      --blue-btn:         #0969da;
+      --blue-btn-hover:   #0550ae;
+      --error-bg:         #fff1f0;
+      --approve-hover-bg: #dafbe1;
+      --overlay-bg:       rgba(255,255,255,0.92);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    header h1 { font-size: 13px; font-weight: 600; color: var(--accent); }
+    .type-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'SF Mono', monospace;
+    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-hint { font-size: 11px; color: var(--text-dim); }
+    .zoom-controls { display: flex; align-items: center; gap: 4px; }
+    .zoom-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .zoom-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    #zoom-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 38px;
+      text-align: center;
+      font-family: 'SF Mono', monospace;
+    }
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1.5;
+      min-width: 46px;
+    }
+    .theme-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+    /* ── Layout ── */
+    main { flex: 1; display: flex; overflow: hidden; }
+
+    /* ── File navigator (folder mode) ── */
+    .file-nav {
+      width: 200px; flex-shrink: 0;
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: none; flex-direction: column; overflow: hidden;
+    }
+    .file-nav.visible { display: flex; }
+    .file-nav-header {
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px; flex-shrink: 0;
+    }
+    .file-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+    .file-list::-webkit-scrollbar { width: 4px; }
+    .file-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .file-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; cursor: pointer;
+      font-size: 12px; color: var(--text-muted);
+      border-left: 2px solid transparent;
+    }
+    .file-item:hover { color: var(--text); background: var(--surface2); }
+    .file-item.active { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+    .file-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-badge {
+      background: var(--orange); color: #fff; border-radius: 10px;
+      padding: 1px 6px; font-size: 10px; font-weight: 600; flex-shrink: 0; display: none;
+    }
+    .file-badge.visible { display: inline; }
+    .file-approved { color: var(--green); font-size: 12px; flex-shrink: 0; }
+
+    /* ── Diagram panel ── */
+    .diagram-panel {
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg);
+      position: relative;
+      cursor: grab;
+    }
+    .diagram-panel.dragging { cursor: grabbing; }
+
+    /* Pan/zoom wrapper — transforms are applied here */
+    #pan-zoom-wrapper {
+      position: absolute;
+      top: 0; left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+      opacity: 0; /* hidden until fitToView() fires */
+      transition: opacity 0.2s ease;
+    }
+    #pan-zoom-wrapper.ready { opacity: 1; }
+
+    #diagram-container { display: none; }
+    #diagram-container svg { display: block; }
+
+    /* Clickable node hover */
+    svg .seb-node { cursor: pointer; }
+    svg .seb-node:hover > rect,
+    svg .seb-node:hover > circle,
+    svg .seb-node:hover > polygon,
+    svg .seb-node:hover > ellipse { filter: brightness(1.25); }
+
+    /* Annotated nodes — orange stroke */
+    svg .seb-annotated > rect,
+    svg .seb-annotated > circle,
+    svg .seb-annotated > polygon,
+    svg .seb-annotated > ellipse {
+      stroke: var(--orange) !important;
+      stroke-width: 2.5px !important;
+    }
+
+    /* Edge hit-area paths */
+    svg .seb-edge-hit {
+      stroke: transparent;
+      stroke-width: 20px;
+      fill: none;
+      cursor: pointer;
+    }
+    svg .seb-edge-hit:hover + path,
+    svg .seb-edge-hit:hover + line { stroke: rgba(247,129,102,0.4) !important; }
+
+    svg .seb-edge-annotated { stroke: var(--orange) !important; stroke-width: 2px !important; }
+
+    /* Standalone text elements */
+    svg text.seb-text { cursor: pointer; }
+    svg text.seb-text:hover { fill: var(--orange) !important; opacity: 0.85; }
+    svg text.seb-text.seb-annotated { fill: var(--orange) !important; }
+
+    /* Loading / error */
+    #loading {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-muted); font-size: 13px;
+    }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #error-box {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      display: none; background: var(--error-bg);
+      border: 1px solid var(--red); border-radius: 8px;
+      padding: 20px 24px; max-width: 500px;
+    }
+    #error-box h3 { color: var(--red); font-size: 13px; margin-bottom: 8px; }
+    #error-text { font-size: 11px; color: var(--text-muted); white-space: pre-wrap; font-family: monospace; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 300px; border-left: 1px solid var(--border);
+      background: var(--surface); display: flex; flex-direction: column;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #ann-count {
+      background: var(--surface2); border-radius: 10px;
+      padding: 1px 7px; font-size: 11px; color: var(--text);
+      font-weight: 500; display: none;
+    }
+    .annotations-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .annotations-list::-webkit-scrollbar { width: 4px; }
+    .annotations-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .annotation-item {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 11px; margin-bottom: 6px;
+      position: relative; animation: fadeIn 0.15s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+    .annotation-item:hover { border-color: var(--text-dim); }
+    .ann-label {
+      font-size: 11px; color: var(--accent); font-weight: 600;
+      margin-bottom: 5px; display: flex; align-items: center; gap: 6px; padding-right: 20px;
+    }
+    .ann-label::before {
+      content: ''; width: 7px; height: 7px;
+      background: var(--orange); border-radius: 50%; flex-shrink: 0;
+    }
+    .ann-comment { font-size: 12px; color: var(--text); line-height: 1.45; }
+    .ann-delete {
+      position: absolute; top: 6px; right: 7px; background: none;
+      border: none; cursor: pointer; color: var(--text-dim);
+      font-size: 15px; line-height: 1; padding: 2px 4px; border-radius: 3px;
+    }
+    .ann-delete:hover { color: var(--red); background: var(--surface2); }
+
+    .empty-state {
+      padding: 36px 16px; text-align: center;
+      color: var(--text-dim); font-size: 12px; line-height: 1.6;
+    }
+    .empty-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+    .empty-hint { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+    .general-section { border-top: 1px solid var(--border); padding: 10px 12px; }
+    .general-section label {
+      display: block; font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600;
+    }
+    .general-section textarea {
+      width: 100%; min-height: 60px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 5px;
+      color: var(--text); font-size: 12px; padding: 7px 9px;
+      resize: vertical; font-family: inherit; line-height: 1.5;
+    }
+    .general-section textarea:focus { outline: none; border-color: var(--accent); }
+
+    .submit-section {
+      padding: 10px 12px; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .btn-submit {
+      width: 100%; padding: 9px; background: var(--blue-btn);
+      border: 1px solid var(--blue-btn-hover); border-radius: 6px;
+      color: #fff; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-submit:hover { background: var(--blue-btn-hover); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-approve {
+      width: 100%; padding: 7px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--green); font-size: 12px; cursor: pointer; font-family: inherit;
+    }
+    .btn-approve:hover { border-color: var(--green); background: var(--approve-hover-bg); }
+
+    /* ── Popover ── */
+    #popover {
+      position: fixed; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 13px; width: 290px; z-index: 200;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: none;
+    }
+    #popover.visible { display: block; }
+    .popover-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; gap: 8px;
+    }
+    .popover-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    #popover-label { font-size: 12px; color: var(--accent); font-weight: 600; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .popover-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 17px; padding: 2px 4px; border-radius: 3px; }
+    .popover-close:hover { color: var(--text); background: var(--surface2); }
+    #popover-input {
+      width: 100%; min-height: 76px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-size: 13px; padding: 8px 10px;
+      resize: vertical; font-family: inherit; line-height: 1.5; margin-bottom: 4px;
+    }
+    #popover-input:focus { outline: none; border-color: var(--accent); }
+    .popover-hint { font-size: 10px; color: var(--text-dim); margin-bottom: 9px; }
+    .popover-actions { display: flex; gap: 7px; justify-content: flex-end; }
+    .btn { padding: 5px 13px; border-radius: 5px; border: 1px solid var(--border); cursor: pointer; font-size: 12px; font-family: inherit; }
+    .btn-primary { background: var(--green-bg); border-color: #2ea043; color: #fff; }
+    .btn-primary:hover { background: #2ea043; }
+    .btn-cancel { background: transparent; color: var(--text-muted); }
+    .btn-cancel:hover { color: var(--text); background: var(--surface2); }
+
+    /* ── Success / countdown overlay ── */
+    #success-overlay {
+      position: fixed; inset: 0; background: var(--overlay-bg);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(6px);
+    }
+    #success-overlay.visible { display: flex; }
+    .success-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px 48px; text-align: center;
+      min-width: 280px; box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    }
+    .countdown-ring {
+      width: 88px; height: 88px; border-radius: 50%;
+      border: 3px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+    .countdown-ring.sent { border-color: var(--green); }
+    #countdown-n {
+      font-size: 40px; font-weight: 700; color: var(--accent);
+      line-height: 1; transition: all 0.25s ease;
+    }
+    .countdown-ring.sent #countdown-n { color: var(--green); font-size: 36px; }
+    .success-card h2 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .success-card p  { color: var(--text-muted); font-size: 13px; line-height: 1.55; }
+    #close-fallback  { display: none; margin-top: 14px; font-size: 12px; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <h1>Sebastian</h1>
+      <span class="type-badge" id="type-badge">loading…</span>
+    </div>
+    <div class="header-right">
+      <button class="theme-btn" id="theme-btn" onclick="cycleTheme()">Auto</button>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomBy(1/1.25)" title="Zoom out">−</button>
+        <span id="zoom-label">100%</span>
+        <button class="zoom-btn" onclick="zoomBy(1.25)" title="Zoom in">+</button>
+        <button class="zoom-btn" onclick="fitToView()" title="Fit to view" style="padding:2px 7px;font-size:11px">Fit</button>
+      </div>
+      <span class="header-hint">Click nodes, edges, or actors to annotate · Scroll to zoom · Drag to pan</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="file-nav" id="file-nav">
+      <div class="file-nav-header">Files</div>
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <div class="diagram-panel" id="diagram-panel">
+      <div id="loading"><div class="spinner"></div>Rendering diagram…</div>
+      <div id="error-box"><h3>Render Error</h3><pre id="error-text"></pre></div>
+      <div id="pan-zoom-wrapper">
+        <div id="diagram-container"></div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-header">
+        Annotations
+        <span id="ann-count">0</span>
+      </div>
+      <div class="annotations-list" id="ann-list"></div>
+      <div class="general-section">
+        <label>General Comments</label>
+        <textarea id="general-comment" placeholder="Overall feedback about the diagram…"></textarea>
+      </div>
+      <div class="submit-section">
+        <button class="btn-submit" id="submit-btn" onclick="submitFeedback(false)">Submit Feedback to Claude</button>
+        <button class="btn-approve" onclick="submitFeedback(true)">✓ Looks good — no changes needed</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="popover">
+    <div class="popover-header">
+      <div>
+        <div class="popover-title">Comment on</div>
+        <div id="popover-label">element</div>
+      </div>
+      <button class="popover-close" onclick="closePopover()">×</button>
+    </div>
+    <textarea id="popover-input" placeholder="What needs to change here?"></textarea>
+    <div class="popover-hint">Cmd/Ctrl+Enter to save</div>
+    <div class="popover-actions">
+      <button class="btn btn-cancel" onclick="closePopover()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAnnotation()">Save</button>
+    </div>
+  </div>
+
+  <div id="success-overlay">
+    <div class="success-card">
+      <div class="countdown-ring" id="countdown-ring">
+        <span id="countdown-n">3</span>
+      </div>
+      <h2 id="countdown-title">Feedback sent</h2>
+      <p id="countdown-msg">Closing browser in <strong id="countdown-sec">3</strong> seconds…</p>
+      <p id="close-fallback">You can close this tab now.</p>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // ── State ──────────────────────────────────────────────────────
+    let annotations       = []; // [{ elementId, label, comment, svgEl, isEdge }]
+    let pendingEl         = null;
+    let feedbackSubmitted = false;
+
+    // Pan/zoom state — start hidden; fitToView() sets the real values after render
+    let scale  = 1;
+    let panX   = 0;
+    let panY   = 0;
+    let fitDone = false;
+
+    // Pan drag state
+    let isPanning    = false;
+    let panStartX    = 0;
+    let panStartY    = 0;
+    let panOriginX   = 0;
+    let panOriginY   = 0;
+    let didPan       = false; // distinguish pan from click
+
+    // Diagram state
+    var diagramCode = null;
+    var renderCount = 0;
+
+    // Folder mode state
+    var folderFiles       = [];   // non-empty only in folder mode
+    var currentFile       = null;
+    var annotationsByFile = {};
+    var commentsByFile    = {};
+    var approvedByFile    = {};
+
+    // ── Mermaid theme configs ──────────────────────────────────────
+    var MERMAID_DARK_CONFIG = {
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'strict',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      themeVariables: {
+        background:            '#0d1117',
+        mainBkg:               '#161b22',
+        nodeBkg:               '#161b22',
+        nodeBorder:            '#30363d',
+        clusterBkg:            '#1c2128',
+        clusterBorder:         '#30363d',
+        titleColor:            '#e6edf3',
+        lineColor:             '#8b949e',
+        textColor:             '#e6edf3',
+        primaryColor:          '#1e3a5c',
+        primaryTextColor:      '#e6edf3',
+        primaryBorderColor:    '#388bfd',
+        secondaryColor:        '#1a3d28',
+        secondaryTextColor:    '#e6edf3',
+        secondaryBorderColor:  '#30363d',
+        tertiaryColor:         '#3d2e00',
+        tertiaryTextColor:     '#e6edf3',
+        tertiaryBorderColor:   '#30363d',
+        edgeLabelBackground:   '#161b22',
+        actorBkg:              '#1c2128',
+        actorBorder:           '#388bfd',
+        actorTextColor:        '#e6edf3',
+        actorLineColor:        '#8b949e',
+        signalColor:           '#8b949e',
+        signalTextColor:       '#e6edf3',
+        labelBoxBkgColor:      '#161b22',
+        labelBoxBorderColor:   '#30363d',
+        labelTextColor:        '#e6edf3',
+        loopTextColor:         '#e6edf3',
+        noteBorderColor:       '#9e6a03',
+        noteBkgColor:          '#2d2000',
+        noteTextColor:         '#e6edf3',
+        activationBorderColor: '#58a6ff',
+        activationBkgColor:    '#1e3a5c',
+        classText:             '#e6edf3',
+        fillType0:             '#1e3a5c',
+        fillType1:             '#1a3d28',
+        fillType2:             '#3d2e00',
+        fillType3:             '#3d1a3d',
+        fillType4:             '#3d1f00',
+        fillType5:             '#3d1a1a',
+        fillType6:             '#1a3d3d',
+        fillType7:             '#261a3d',
+      },
+    };
+
+    var MERMAID_LIGHT_CONFIG = {
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'strict',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      themeVariables: {
+        background:            '#ffffff',
+        mainBkg:               '#f6f8fa',
+        nodeBkg:               '#f6f8fa',
+        nodeBorder:            '#d0d7de',
+        clusterBkg:            '#eaeef2',
+        clusterBorder:         '#d0d7de',
+        titleColor:            '#1f2328',
+        lineColor:             '#636c76',
+        textColor:             '#1f2328',
+        primaryColor:          '#dbeafe',
+        primaryTextColor:      '#0c2461',
+        primaryBorderColor:    '#0969da',
+        secondaryColor:        '#d1fae5',
+        secondaryTextColor:    '#064e3b',
+        secondaryBorderColor:  '#059669',
+        tertiaryColor:         '#fef9c3',
+        tertiaryTextColor:     '#713f12',
+        tertiaryBorderColor:   '#ca8a04',
+        edgeLabelBackground:   '#f6f8fa',
+        actorBkg:              '#dbeafe',
+        actorBorder:           '#0969da',
+        actorTextColor:        '#1f2328',
+        actorLineColor:        '#636c76',
+        signalColor:           '#636c76',
+        signalTextColor:       '#1f2328',
+        labelBoxBkgColor:      '#f6f8fa',
+        labelBoxBorderColor:   '#d0d7de',
+        labelTextColor:        '#1f2328',
+        loopTextColor:         '#1f2328',
+        noteBorderColor:       '#ca8a04',
+        noteBkgColor:          '#fef9c3',
+        noteTextColor:         '#1f2328',
+        activationBorderColor: '#0969da',
+        activationBkgColor:    '#dbeafe',
+        classText:             '#1f2328',
+        fillType0:             '#dbeafe',
+        fillType1:             '#d1fae5',
+        fillType2:             '#fef9c3',
+        fillType3:             '#fce7f3',
+        fillType4:             '#ffe4e6',
+        fillType5:             '#f3e8ff',
+        fillType6:             '#ccfbf1',
+        fillType7:             '#e0f2fe',
+      },
+    };
+
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
+
+    // ── Diagram type detection ─────────────────────────────────────
+    var TYPE_MAP = {
+      sequencediagram:    'Sequence Diagram',
+      graph:              'Flowchart',
+      flowchart:          'Flowchart',
+      classdiagram:       'Class Diagram',
+      statediagram:       'State Diagram',
+      erdiagram:          'ER Diagram',
+      gantt:              'Gantt Chart',
+      pie:                'Pie Chart',
+      gitgraph:           'Git Graph',
+      mindmap:            'Mind Map',
+      timeline:           'Timeline',
+      c4context:          'C4 Context',
+      journey:            'User Journey',
+      requirementdiagram: 'Requirement Diagram',
+      quadrantchart:      'Quadrant Chart',
+    };
+    function detectType(code) {
+      var key = code.trim().split('\n')[0].trim().toLowerCase().replace(/\s.*/, '');
+      return TYPE_MAP[key] || 'Mermaid Diagram';
+    }
+
+    // ── Annotatable node classification ───────────────────────────
+    var ANNOTATABLE_CLASSES = new Set([
+      'node', 'actor', 'classGroup', 'stateGroup', 'cluster',
+      'edgeLabel', 'messageText', 'note', 'loopText',
+      'mindmap-node', 'entityBox', 'taskText', 'edgePath',
+    ]);
+    var SKIP_CLASSES = new Set([
+      'background', 'grid', 'tick', 'arrowheadPath', 'marker',
+    ]);
+
+    function isAnnotatable(el) {
+      if (!el || el.tagName.toUpperCase() !== 'G') return false;
+      var cls = el.classList;
+      if (!cls) return false;
+      for (var c of SKIP_CLASSES) { if (cls.contains(c)) return false; }
+      for (var c of ANNOTATABLE_CLASSES) { if (cls.contains(c)) return true; }
+      var id = el.id || '';
+      return id.length > 0 && id !== 'root' && !id.startsWith('mermaid');
+    }
+
+    function extractLabel(el) {
+      for (var t of el.querySelectorAll('text, tspan')) {
+        var txt = t.textContent ? t.textContent.trim() : '';
+        if (txt.length > 0 && txt.length < 120) return txt;
+      }
+      // foreignObject HTML content — Mermaid v10+ uses this for edge labels in some diagram types
+      for (var fo of el.querySelectorAll('foreignObject')) {
+        var txt = (fo.textContent || '').trim();
+        if (txt.length > 0 && txt.length < 120) return txt;
+      }
+      if (el.id) {
+        var parts = el.id.split('-');
+        var PFXS = new Set(['flowchart','classid','state','actor','entity','node','cluster']);
+        var start = PFXS.has(parts[0]) ? 1 : 0;
+        var end   = /^\d+$/.test(parts[parts.length - 1]) ? parts.length - 1 : parts.length;
+        var lbl = parts.slice(start, end).join('-');
+        if (lbl) return lbl;
+        return el.id;
+      }
+      for (var c of el.classList) {
+        if (!['node','actor','default','basic','edgePath'].includes(c)) return c;
+      }
+      return 'element';
+    }
+
+    // ── Pan/zoom ────────────────────────────────────────────────────
+    function applyTransform() {
+      var w = document.getElementById('pan-zoom-wrapper');
+      w.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
+      document.getElementById('zoom-label').textContent = Math.round(scale * 100) + '%';
+    }
+
+    function zoomBy(factor) {
+      var panel = document.getElementById('diagram-panel');
+      var cx    = panel.clientWidth  / 2;
+      var cy    = panel.clientHeight / 2;
+      zoomAt(factor, cx, cy);
+    }
+
+    function zoomAt(factor, cx, cy) {
+      var newScale = Math.max(0.1, Math.min(8, scale * factor));
+      var ratio    = newScale / scale;
+      panX = cx - ratio * (cx - panX);
+      panY = cy - ratio * (cy - panY);
+      scale = newScale;
+      applyTransform();
+    }
+
+    function fitToView() {
+      var panel     = document.getElementById('diagram-panel');
+      var container = document.getElementById('diagram-container');
+      var svg       = container.querySelector('svg');
+      if (!svg) return;
+
+      var svgW = 0, svgH = 0;
+
+      // 1. Prefer viewBox — the authoritative natural size set by Mermaid
+      var vb = svg.getAttribute('viewBox');
+      if (vb) {
+        var parts = vb.trim().split(/[\s,]+/);
+        svgW = parseFloat(parts[2]);
+        svgH = parseFloat(parts[3]);
+      }
+
+      // 2. Fall back to width/height attributes (skip percentage values)
+      if (!(svgW > 0) || !(svgH > 0)) {
+        var wa = svg.getAttribute('width');
+        var ha = svg.getAttribute('height');
+        if (wa && !wa.includes('%')) svgW = parseFloat(wa);
+        if (ha && !ha.includes('%')) svgH = parseFloat(ha);
+      }
+
+      // 3. Last resort: measure the element with the current transform removed
+      if (!(svgW > 0) || !(svgH > 0)) {
+        var wrapper = document.getElementById('pan-zoom-wrapper');
+        var savedTransform = wrapper.style.transform;
+        wrapper.style.transform = 'none';
+        var r = svg.getBoundingClientRect();
+        svgW = r.width;
+        svgH = r.height;
+        wrapper.style.transform = savedTransform;
+      }
+
+      if (!(svgW > 0) || !(svgH > 0)) return;
+
+      var pad = 40;
+      var pw  = panel.clientWidth  - pad * 2;
+      var ph  = panel.clientHeight - pad * 2;
+
+      // Scale to fill the available space — no cap, allow both zoom-in and zoom-out
+      scale = Math.min(pw / svgW, ph / svgH);
+      panX  = (panel.clientWidth  - svgW * scale) / 2;
+      panY  = (panel.clientHeight - svgH * scale) / 2;
+      applyTransform();
+
+      // Reveal the diagram after the first fit
+      document.getElementById('pan-zoom-wrapper').classList.add('ready');
+    }
+
+    // Wheel to zoom
+    document.getElementById('diagram-panel').addEventListener('wheel', function(e) {
+      if (e.target.closest('#popover')) return;
+      e.preventDefault();
+      var factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      zoomAt(factor, e.clientX - document.getElementById('diagram-panel').getBoundingClientRect().left,
+                     e.clientY - document.getElementById('diagram-panel').getBoundingClientRect().top);
+    }, { passive: false });
+
+    // Mouse pan
+    document.getElementById('diagram-panel').addEventListener('mousedown', function(e) {
+      if (e.target.closest('.seb-node') || e.target.closest('.seb-edge-hit')) return;
+      if (e.button !== 0) return;
+      isPanning  = true;
+      didPan     = false;
+      panStartX  = e.clientX;
+      panStartY  = e.clientY;
+      panOriginX = panX;
+      panOriginY = panY;
+      document.getElementById('diagram-panel').classList.add('dragging');
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isPanning) return;
+      var dx = e.clientX - panStartX;
+      var dy = e.clientY - panStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didPan = true;
+      panX = panOriginX + dx;
+      panY = panOriginY + dy;
+      applyTransform();
+    });
+
+    document.addEventListener('mouseup', function() {
+      isPanning = false;
+      document.getElementById('diagram-panel').classList.remove('dragging');
+    });
+
+    // Touch pan/zoom
+    var lastTouchDist = null;
+    document.getElementById('diagram-panel').addEventListener('touchstart', function(e) {
+      if (e.touches.length === 2) {
+        lastTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    document.getElementById('diagram-panel').addEventListener('touchmove', function(e) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        var dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (lastTouchDist) {
+          var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          var panel = document.getElementById('diagram-panel');
+          var r = panel.getBoundingClientRect();
+          zoomAt(dist / lastTouchDist, midX - r.left, midY - r.top);
+        }
+        lastTouchDist = dist;
+      }
+    }, { passive: false });
+
+    document.getElementById('diagram-panel').addEventListener('touchend', function() {
+      lastTouchDist = null;
+    }, { passive: true });
+
+    // ── Render diagram ─────────────────────────────────────────────
+    async function init() {
+      var res  = await fetch('/api/diagram');
+      var data = await res.json();
+      diagramCode = data.code;
+
+      document.getElementById('type-badge').textContent = detectType(diagramCode);
+      if (data.title) document.getElementById('diagram-title').textContent = data.title;
+
+      // Folder mode: initialise nav pane
+      if (data.files && data.files.length > 0) {
+        folderFiles = data.files;
+        currentFile = data.currentFile || data.files[0];
+        initFolderNav();
+      }
+
+      var effective = getEffectiveTheme(currentThemeMode);
+      reinitMermaid(effective);
+
+      var container = document.getElementById('diagram-container');
+
+      try {
+        var id       = 'mermaid-diagram-' + (++renderCount);
+        var rendered = await mermaid.render(id, diagramCode);
+        var svg      = rendered.svg;
+        var bindFns  = rendered.bindFunctions;
+
+        var parser = new DOMParser();
+        var doc    = parser.parseFromString(svg, 'image/svg+xml');
+        var svgEl  = document.adoptNode(doc.documentElement);
+
+        // Normalize SVG dimensions from viewBox so fitToView() gets reliable pixel values.
+        // Mermaid often sets width="100%" or style="max-width:…" which breaks measurement
+        // inside an absolutely-positioned wrapper.
+        var vb = svgEl.getAttribute('viewBox');
+        if (vb) {
+          var vbParts = vb.trim().split(/[\s,]+/);
+          var vbW = parseFloat(vbParts[2]);
+          var vbH = parseFloat(vbParts[3]);
+          if (vbW > 0 && vbH > 0) {
+            svgEl.setAttribute('width',  vbW);
+            svgEl.setAttribute('height', vbH);
+            svgEl.style.removeProperty('max-width');
+          }
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        container.appendChild(svgEl);
+        container.style.display = 'block';
+
+        if (bindFns) bindFns(container);
+
+        setupClickHandlers(svgEl);
+
+        // Wait for two animation frames so the browser has fully painted
+        // and the panel has its final dimensions before we measure and fit.
+        requestAnimationFrame(function() {
+          requestAnimationFrame(fitToView);
+        });
+
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        var box = document.getElementById('error-box');
+        document.getElementById('error-text').textContent =
+          err && err.message ? err.message : String(err);
+        box.style.display = 'block';
+      }
+    }
+
+    async function rerenderDiagram() {
+      var container = document.getElementById('diagram-container');
+      while (container.firstChild) container.removeChild(container.firstChild);
+      container.style.display = 'none';
+      document.getElementById('pan-zoom-wrapper').classList.remove('ready');
+
+      try {
+        var id       = 'mermaid-diagram-' + (++renderCount);
+        var rendered = await mermaid.render(id, diagramCode);
+        var svg      = rendered.svg;
+        var bindFns  = rendered.bindFunctions;
+
+        var parser = new DOMParser();
+        var doc    = parser.parseFromString(svg, 'image/svg+xml');
+        var svgEl  = document.adoptNode(doc.documentElement);
+
+        var vb = svgEl.getAttribute('viewBox');
+        if (vb) {
+          var vbParts = vb.trim().split(/[\s,]+/);
+          var vbW = parseFloat(vbParts[2]);
+          var vbH = parseFloat(vbParts[3]);
+          if (vbW > 0 && vbH > 0) {
+            svgEl.setAttribute('width',  vbW);
+            svgEl.setAttribute('height', vbH);
+            svgEl.style.removeProperty('max-width');
+          }
+        }
+
+        container.appendChild(svgEl);
+        container.style.display = 'block';
+
+        if (bindFns) bindFns(container);
+
+        setupClickHandlers(svgEl);
+        reapplyAnnotationMarkers(svgEl);
+
+        requestAnimationFrame(function() {
+          requestAnimationFrame(fitToView);
+        });
+      } catch (_) { /* silently ignore theme-switch re-render errors */ }
+    }
+
+    function reapplyAnnotationMarkers(svgEl) {
+      annotations.forEach(function(a) {
+        var el = null;
+        if (a.elementId.startsWith('text-')) {
+          // Match text element by content (label stored as "\u201ccontent\u201d")
+          var content = a.label.replace(/^\u201c|\u201d$/g, '');
+          svgEl.querySelectorAll('text.seb-text').forEach(function(t) {
+            if ((t.textContent || '').trim() === content) el = t;
+          });
+        } else {
+          el = svgEl.getElementById(a.elementId);
+        }
+
+        if (el) {
+          a.svgEl = el;
+          if (a.isEdge) {
+            el.querySelectorAll('path, line').forEach(function(p) {
+              p.classList.add('seb-edge-annotated');
+            });
+          } else {
+            el.classList.add('seb-annotated');
+          }
+        }
+      });
+    }
+
+    // ── Folder mode helpers ────────────────────────────────────────
+
+    function initFolderNav() {
+      document.getElementById('file-nav').classList.add('visible');
+      document.getElementById('submit-btn').textContent = 'Submit All Feedback';
+      // Hide the single-file approve button; files are approved individually in the nav
+      var approveBtn = document.querySelector('.btn-approve');
+      if (approveBtn) approveBtn.style.display = 'none';
+      renderFileList();
+    }
+
+    function renderFileList() {
+      var list = document.getElementById('file-list');
+      while (list.firstChild) list.removeChild(list.firstChild);
+
+      folderFiles.forEach(function(filename) {
+        var item = document.createElement('div');
+        item.className = 'file-item' + (filename === currentFile ? ' active' : '');
+
+        var nameEl = document.createElement('span');
+        nameEl.className = 'file-item-name';
+        nameEl.textContent = filename;
+        nameEl.title = filename;
+        item.appendChild(nameEl);
+
+        if (approvedByFile[filename]) {
+          var check = document.createElement('span');
+          check.className = 'file-approved';
+          check.textContent = '✓';
+          item.appendChild(check);
+        } else {
+          var count = (annotationsByFile[filename] || []).length;
+          var badge = document.createElement('span');
+          badge.className = 'file-badge' + (count > 0 ? ' visible' : '');
+          badge.textContent = String(count);
+          item.appendChild(badge);
+        }
+
+        item.addEventListener('click', function() { switchFile(filename); });
+        list.appendChild(item);
+      });
+    }
+
+    function saveCurrentFileState() {
+      if (!currentFile) return;
+      annotationsByFile[currentFile] = annotations.slice();
+      commentsByFile[currentFile]    = document.getElementById('general-comment').value;
+    }
+
+    async function switchFile(filename) {
+      if (filename === currentFile) return;
+
+      saveCurrentFileState();
+
+      currentFile = filename;
+      annotations = (annotationsByFile[filename] || []).slice();
+      document.getElementById('general-comment').value = commentsByFile[filename] || '';
+      renderList();
+      renderFileList();
+
+      var res  = await fetch('/api/diagram?file=' + encodeURIComponent(filename));
+      var data = await res.json();
+      diagramCode = data.code;
+
+      document.getElementById('type-badge').textContent = detectType(diagramCode);
+      document.getElementById('diagram-title').textContent = data.title || '';
+
+      var effective = getEffectiveTheme(currentThemeMode);
+      reinitMermaid(effective);
+      await rerenderDiagram();
+    }
+
+    // ── Click handling ─────────────────────────────────────────────
+
+    // For edge labels without their own IDs (common in ER diagrams), walk up ancestor
+    // groups looking for a relationship group ID in the form "id-EntityA-EntityB-N".
+    function resolveRelationshipContext(el, svg) {
+      var cur = el.parentElement;
+      var depth = 0;
+      while (cur && cur !== svg && depth < 5) {
+        var m = (cur.id || '').match(/^id-([A-Za-z]\w*)-([A-Za-z]\w*)-\d+$/);
+        if (m) return m[1] + ' \u2192 ' + m[2];
+        cur = cur.parentElement;
+        depth++;
+      }
+      return null;
+    }
+
+    function setupClickHandlers(svg) {
+      if (!svg) return;
+
+      // Assign stable IDs to edgeLabel groups that lack them so multiple same-text
+      // labels (e.g. two "receives" edges) can be annotated independently.
+      var elIdx = 0;
+      svg.querySelectorAll('g.edgeLabel').forEach(function(el) {
+        if (!el.id) el.id = 'seb-el-' + (++elIdx);
+      });
+
+      // Mark annotatable node groups
+      svg.querySelectorAll('g').forEach(function(el) {
+        if (isAnnotatable(el)) el.classList.add('seb-node');
+      });
+
+      // Add wide invisible hit-areas over edge paths so they are easy to click
+      addEdgeHitAreas(svg);
+
+      // Make standalone text elements clickable (those not inside a node group)
+      makeTextElementsClickable(svg);
+
+      // Single delegated listener on the SVG (handles node groups and edge hit-areas)
+      svg.addEventListener('click', handleSvgClick);
+    }
+
+    function addEdgeHitAreas(svg) {
+      // Covers edge lines/paths across all Mermaid diagram types:
+      //   flowchart edgePath, class diagram relations, state transitions,
+      //   sequence message lines, ER relationship lines
+      var edgeSelectors = [
+        'g.edgePath path',         // flowchart, class diagram, state diagram
+        'g.flowchart-link path',   // flowchart alternate renderer
+        '.messageLine0',           // sequence: solid arrow line
+        '.messageLine1',           // sequence: dashed arrow line
+        'path.relation',           // class / ER relation paths
+        '.er-relationshipLine',    // ER diagram (Mermaid v10+)
+        'line.er-relationshipLine',
+      ].join(',');
+
+      svg.querySelectorAll(edgeSelectors).forEach(function(el) {
+        // Skip if a hit-area was already added right after this element
+        if (el.nextSibling && el.nextSibling.classList &&
+            el.nextSibling.classList.contains('seb-edge-hit')) return;
+
+        var hit = el.cloneNode(false);
+        hit.classList.add('seb-edge-hit');
+        hit.removeAttribute('marker-end');
+        hit.removeAttribute('marker-start');
+        el.parentNode.insertBefore(hit, el.nextSibling);
+      });
+    }
+
+    // Make every visible text element that is NOT already inside a node group clickable.
+    function makeTextElementsClickable(svg) {
+      svg.querySelectorAll('text').forEach(function(textEl) {
+        var content = textEl.textContent ? textEl.textContent.trim() : '';
+
+        // Skip empty, purely numeric (axis labels), or very long strings
+        if (!content || content.length < 1 || content.length > 150) return;
+        if (/^\d+(\.\d+)?(%|px)?$/.test(content)) return;
+
+        // Skip if already handled by a parent seb-node group
+        if (textEl.closest('.seb-node')) return;
+
+        // Skip SVG title / desc elements
+        if (textEl.closest('title, desc')) return;
+
+        textEl.classList.add('seb-text');
+
+        textEl.addEventListener('click', function(e) {
+          e.stopPropagation();
+          // Use a stable ID based on content so same text across re-renders maps to same annotation
+          var id = 'text-' + content.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').substring(0, 50);
+          openPopover(id, '\u201c' + content + '\u201d', textEl, e.clientX, e.clientY, false);
+        });
+      });
+    }
+
+    function handleSvgClick(e) {
+      // Ignore if we just panned
+      if (didPan) { didPan = false; return; }
+
+      var el  = e.target;
+      var svg = e.currentTarget;
+
+      // Edge hit-area clicked
+      if (el.classList && el.classList.contains('seb-edge-hit')) {
+        e.stopPropagation();
+        var parentG = el.closest('g.edgePath') || el.closest('g') || el.parentElement;
+        var id      = parentG ? (parentG.id || 'edge') : 'edge';
+        var label   = 'Edge: ' + getEdgeLabel(parentG, svg);
+        openPopover(id, label, parentG, e.clientX, e.clientY, true);
+        return;
+      }
+
+      // Walk up DOM for annotatable node group
+      while (el && el !== svg) {
+        if (el.classList && el.classList.contains('seb-node')) {
+          e.stopPropagation();
+          var id        = el.id || Array.from(el.classList).join('-');
+          var labelText = extractLabel(el);
+          var label     = labelText;
+          // For edge labels, try to append "EntityA → EntityB" context so identical
+          // label texts (e.g. two "receives" edges) are distinguishable.
+          if (el.classList.contains('edgeLabel')) {
+            var ctx = resolveRelationshipContext(el, svg);
+            if (ctx) label = labelText + ' [' + ctx + ']';
+          }
+          openPopover(id, label, el, e.clientX, e.clientY, false);
+          return;
+        }
+        el = el.parentElement;
+      }
+    }
+
+    function getEdgeLabel(edgeGroupEl, svg) {
+      if (!edgeGroupEl) return 'Arrow';
+      var id = edgeGroupEl.id || '';
+
+      // Flowchart/state/class format: "L-SourceId-TargetId-N"
+      var m = id.match(/^L-(.+)-([^-]+)-\d+$/);
+      if (m) {
+        var entityPart = m[1] + ' \u2192 ' + m[2];
+        var labelGroup = svg.querySelector('#' + CSS.escape('LS-' + id.replace(/^L-/, '')));
+        if (labelGroup) {
+          var t = labelGroup.textContent.trim();
+          if (t) return t + ' [' + entityPart + ']';
+        }
+        return entityPart;
+      }
+
+      // ER diagram format: "id-Entity1-Entity2-N"
+      var erM = id.match(/^id-([A-Za-z]\w*)-([A-Za-z]\w*)-\d+$/);
+      if (erM) return erM[1] + ' \u2192 ' + erM[2];
+
+      // Try text in nearby edgeLabel group
+      var labelGroup = svg.querySelector('#' + CSS.escape('LS-' + id.replace(/^L-/, '')));
+      if (labelGroup) {
+        var t = labelGroup.textContent.trim();
+        if (t) return t;
+      }
+
+      return id || 'Arrow';
+    }
+
+    // ── Popover ────────────────────────────────────────────────────
+    function openPopover(elementId, label, svgEl, cx, cy, isEdge) {
+      pendingEl = { elementId, label, svgEl, isEdge: !!isEdge };
+
+      document.getElementById('popover-label').textContent = label;
+
+      var existing = annotations.find(function(a) { return a.elementId === elementId; });
+      document.getElementById('popover-input').value = existing ? existing.comment : '';
+
+      var PW = 296, PH = 190, M = 14;
+      var left = cx + 14;
+      var top  = cy + 14;
+      if (left + PW > window.innerWidth  - M) left = cx - PW - 14;
+      if (top  + PH > window.innerHeight - M) top  = cy - PH - 14;
+      if (left < M) left = M;
+      if (top  < M) top  = M;
+
+      var popover = document.getElementById('popover');
+      popover.style.left = left + 'px';
+      popover.style.top  = top  + 'px';
+      popover.classList.add('visible');
+      setTimeout(function() { document.getElementById('popover-input').focus(); }, 40);
+    }
+
+    function closePopover() {
+      document.getElementById('popover').classList.remove('visible');
+      pendingEl = null;
+    }
+
+    function saveAnnotation() {
+      var comment = document.getElementById('popover-input').value.trim();
+      if (!comment || !pendingEl) { closePopover(); return; }
+
+      var elementId = pendingEl.elementId;
+      var label     = pendingEl.label;
+      var svgEl     = pendingEl.svgEl;
+      var isEdge    = pendingEl.isEdge;
+
+      var idx = annotations.findIndex(function(a) { return a.elementId === elementId; });
+      if (idx >= 0) {
+        annotations[idx].comment = comment;
+        annotations[idx].svgEl   = svgEl;
+      } else {
+        annotations.push({ elementId, label, comment, svgEl, isEdge });
+      }
+
+      // Visual feedback on the annotated element
+      if (svgEl) {
+        if (isEdge) {
+          // Highlight edge path(s) inside the group
+          svgEl.querySelectorAll('path, line').forEach(function(p) {
+            p.classList.add('seb-edge-annotated');
+          });
+        } else {
+          // Works for both node <g> groups and standalone <text> elements
+          svgEl.classList.add('seb-annotated');
+        }
+      }
+
+      closePopover();
+      renderList();
+    }
+
+    document.getElementById('popover-input').addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); saveAnnotation(); }
+      if (e.key === 'Escape') closePopover();
+    });
+
+    document.addEventListener('click', function(e) {
+      var p = document.getElementById('popover');
+      if (p.classList.contains('visible') && !p.contains(e.target)) closePopover();
+    }, true);
+
+    // ── Annotation list ────────────────────────────────────────────
+    function renderList() {
+      var list  = document.getElementById('ann-list');
+      var count = document.getElementById('ann-count');
+
+      while (list.firstChild) list.removeChild(list.firstChild);
+
+      // Keep file nav badge in sync
+      if (folderFiles.length > 0) renderFileList();
+
+      if (annotations.length === 0) {
+        count.style.display = 'none';
+        var empty = document.createElement('div');
+        empty.className = 'empty-state';
+        var icon  = document.createElement('span');
+        icon.className = 'empty-icon';
+        icon.textContent = '💬';
+        var msg = document.createTextNode('No annotations yet');
+        var hint = document.createElement('div');
+        hint.className = 'empty-hint';
+        hint.textContent = 'Click on nodes, edges, or actors to leave comments';
+        empty.appendChild(icon);
+        empty.appendChild(msg);
+        empty.appendChild(hint);
+        list.appendChild(empty);
+        return;
+      }
+
+      count.textContent   = String(annotations.length);
+      count.style.display = 'inline';
+
+      annotations.forEach(function(a, i) {
+        var item = document.createElement('div');
+        item.className = 'annotation-item';
+
+        var labelEl = document.createElement('div');
+        labelEl.className = 'ann-label';
+        labelEl.textContent = a.label;
+
+        var commentEl = document.createElement('div');
+        commentEl.className = 'ann-comment';
+        commentEl.textContent = a.comment;
+
+        var del = document.createElement('button');
+        del.className = 'ann-delete';
+        del.textContent = '×';
+        del.title = 'Remove';
+        del.addEventListener('click', (function(idx) {
+          return function() { deleteAnnotation(idx); };
+        })(i));
+
+        item.appendChild(labelEl);
+        item.appendChild(commentEl);
+        item.appendChild(del);
+        list.appendChild(item);
+      });
+    }
+
+    function deleteAnnotation(idx) {
+      var a = annotations[idx];
+      if (a.svgEl) {
+        if (a.isEdge) {
+          a.svgEl.querySelectorAll('path, line').forEach(function(p) {
+            p.classList.remove('seb-edge-annotated');
+          });
+        } else {
+          a.svgEl.classList.remove('seb-annotated');
+        }
+      }
+      annotations.splice(idx, 1);
+      renderList();
+    }
+
+    // ── Submit ─────────────────────────────────────────────────────
+    async function submitFeedback(approved) {
+      var generalComment = document.getElementById('general-comment').value.trim();
+
+      if (folderFiles.length > 0) {
+        // ── Folder mode ──
+        saveCurrentFileState();
+        if (approved) approvedByFile[currentFile] = true;
+
+        // Check if there are unannotated files to warn the user
+        var filesWithFeedback = folderFiles.filter(function(f) {
+          return (annotationsByFile[f] || []).length > 0 || (commentsByFile[f] || '').trim();
+        });
+        if (filesWithFeedback.length === 0 && !approved) {
+          if (!window.confirm('No annotations added to any file.\nSubmit with no feedback?')) return;
+        }
+
+        feedbackSubmitted = true;
+        var btn = document.getElementById('submit-btn');
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+
+        var fileAnnotations = {};
+        folderFiles.forEach(function(f) {
+          fileAnnotations[f] = {
+            annotations:    (annotationsByFile[f] || []).map(function(a) {
+              return { elementId: a.elementId, label: a.label, comment: a.comment };
+            }),
+            generalComment: (commentsByFile[f] || '').trim(),
+            approved:       approvedByFile[f] || false,
+          };
+        });
+
+        await fetch('/api/feedback', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ fileAnnotations }),
+        });
+
+      } else {
+        // ── Single-file mode ──
+        if (!approved && annotations.length === 0 && !generalComment) {
+          if (!window.confirm('No annotations or comments added.\nSubmit with no feedback?')) return;
+        }
+
+        feedbackSubmitted = true;
+        var btn = document.getElementById('submit-btn');
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+
+        var payload = {
+          annotations:    annotations.map(function(a) {
+            return { elementId: a.elementId, label: a.label, comment: a.comment };
+          }),
+          generalComment: approved ? '' : generalComment,
+          approved:       approved,
+        };
+
+        await fetch('/api/feedback', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+        });
+      }
+
+      startCountdown();
+    }
+
+    // ── Countdown & close ───────────────────────────────────────────
+    function startCountdown() {
+      document.getElementById('success-overlay').classList.add('visible');
+
+      var n       = 3;
+      var nEl     = document.getElementById('countdown-n');
+      var secEl   = document.getElementById('countdown-sec');
+      var ring    = document.getElementById('countdown-ring');
+      var msgEl   = document.getElementById('countdown-msg');
+
+      nEl.textContent  = n;
+      secEl.textContent = n;
+
+      var timer = setInterval(function() {
+        n--;
+        if (n <= 0) {
+          clearInterval(timer);
+          // Show checkmark, then close
+          nEl.textContent = '✓';
+          ring.classList.add('sent');
+          msgEl.style.display = 'none';
+          setTimeout(function() {
+            // Navigate to blank — works regardless of how the tab was opened,
+            // unlike window.close() which browsers block for OS-launched tabs.
+            window.location.replace('about:blank');
+          }, 300);
+        } else {
+          nEl.textContent   = n;
+          secEl.textContent = n;
+        }
+      }, 1000);
+    }
+
+    // ── Theme management ───────────────────────────────────────────
+    var THEMES       = ['system', 'light', 'dark'];
+    var THEME_LABELS = { system: 'Auto', light: 'Light', dark: 'Dark' };
+    var currentThemeMode = 'system';
+
+    function getEffectiveTheme(mode) {
+      if (mode === 'system') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      return mode;
+    }
+
+    function reinitMermaid(effective) {
+      mermaid.initialize(effective === 'light' ? MERMAID_LIGHT_CONFIG : MERMAID_DARK_CONFIG);
+    }
+
+    function initTheme() {
+      currentThemeMode = localStorage.getItem('seb-theme') || 'system';
+      var effective = getEffectiveTheme(currentThemeMode);
+      document.documentElement.setAttribute('data-theme', effective);
+      var btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = THEME_LABELS[currentThemeMode];
+    }
+
+    function cycleTheme() {
+      var idx = THEMES.indexOf(currentThemeMode);
+      currentThemeMode = THEMES[(idx + 1) % THEMES.length];
+      localStorage.setItem('seb-theme', currentThemeMode);
+      var effective = getEffectiveTheme(currentThemeMode);
+      document.documentElement.setAttribute('data-theme', effective);
+      var btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = THEME_LABELS[currentThemeMode];
+      if (diagramCode) {
+        reinitMermaid(effective);
+        rerenderDiagram();
+      }
+    }
+
+    // Re-render when OS preference changes (only relevant in system mode)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      if (currentThemeMode === 'system' && diagramCode) {
+        var effective = getEffectiveTheme('system');
+        document.documentElement.setAttribute('data-theme', effective);
+        reinitMermaid(effective);
+        rerenderDiagram();
+      }
+    });
+
+    // ── Release hook when browser is closed without submitting ─────
+    window.addEventListener('pagehide', function() {
+      if (!feedbackSubmitted) {
+        navigator.sendBeacon('/api/close');
+      }
+    });
+
+    // ── Boot ───────────────────────────────────────────────────────
+    renderList();
+    initTheme();
+
+    init().catch(function(err) {
+      document.getElementById('loading').textContent =
+        'Failed to load diagram: ' + (err && err.message ? err.message : String(err));
+    });
+  </script>
+</body>
+</html>

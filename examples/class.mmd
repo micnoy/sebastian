@@ -1,0 +1,18 @@
+classDiagram
+    class Author {
+        +String name
+        +String email
+        +createPost(title) Post
+    }
+    class Post {
+        +String title
+        +String body
+        +DateTime publishedAt
+        +addComment(text) Comment
+    }
+    class Comment {
+        +String text
+        +DateTime createdAt
+    }
+    Author "1" --> "many" Post : writes
+    Post "1" --> "many" Comment : has

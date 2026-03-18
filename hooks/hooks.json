@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PLUGIN_ROOT\"/hooks/setup.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PLUGIN_ROOT\"/hooks/mmd-filter.sh",
+            "timeout": 300000
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Sebastian — CLI entry point (for direct terminal use)
+# Add to PATH manually: ln -s "$(pwd)/bin/sebastian" ~/.local/bin/sebastian
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec node "$SCRIPT_DIR/../server/index.js" "$@"

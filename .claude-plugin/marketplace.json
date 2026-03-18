@@ -1,0 +1,14 @@
+{
+  "name": "micnoy-sebastian",
+  "owner": {
+    "name": "micnoy",
+    "url": "https://github.com/micnoy"
+  },
+  "plugins": [
+    {
+      "name": "sebastian",
+      "source": "./",
+      "description": "Interactive Mermaid diagram preview and annotation for Claude Code"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant U as User
+    participant C as Client
+    participant A as Auth Server
+    participant R as Resource Server
+    U->>C: Click "Login"
+    C->>A: Redirect with client_id + scope
+    A->>U: Show login/consent
+    U->>A: Grant permission
+    A->>C: Return auth code
+    C->>A: Exchange code for token
+    A->>C: Access token + refresh token
+    C->>R: Request with access token
+    R->>C: Protected resource

@@ -1,0 +1,7 @@
+flowchart TD
+    A([User]) --> B[Enter credentials]
+    B --> C{Valid?}
+    C -- Yes --> D[Issue JWT]
+    C -- No --> E[Show error]
+    D --> F([Dashboard])
+    E --> B

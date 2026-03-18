@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Confirmed : payment received
+    Confirmed --> Shipped : warehouse dispatch
+    Shipped --> Delivered : carrier confirms
+    Delivered --> [*]
+    Confirmed --> Cancelled : user cancels
+    Pending --> Cancelled : timeout
+    Cancelled --> [*]
